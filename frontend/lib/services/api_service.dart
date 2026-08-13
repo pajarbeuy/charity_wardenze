@@ -82,6 +82,40 @@ class ApiService {
     return _processResponse(response);
   }
 
+  Future<dynamic> updateProfileMultipart({
+    required String name,
+    String? phone,
+    Uint8List? bytes,
+    String? filePath,
+    String? filename,
+  }) async {
+    final url = Uri.parse('${ApiConfig.baseUrl}/profile');
+    final request = http.MultipartRequest('POST', url);
+
+    request.headers.addAll({
+      'Accept': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    });
+
+    request.fields['name'] = name;
+    if (phone != null) request.fields['phone'] = phone;
+    request.fields['_method'] = 'PUT';
+
+    if (bytes != null) {
+      request.files.add(http.MultipartFile.fromBytes(
+        'avatar',
+        bytes,
+        filename: filename ?? 'avatar.jpg',
+      ));
+    } else if (filePath != null) {
+      request.files.add(await http.MultipartFile.fromPath('avatar', filePath));
+    }
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+    return _processResponse(response);
+  }
+
   dynamic _processResponse(http.Response response) {
     final body = jsonDecode(response.body);
     if (response.statusCode >= 200 && response.statusCode < 300) {

@@ -29,6 +29,9 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+    protected $appends = [
+        'avatar_url',
+    ];
 
     protected function casts(): array
     {
@@ -36,6 +39,13 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+    public function getAvatarUrlAttribute(): ?string
+    {
+        if (! $this->avatar) {
+            return null;
+        }
+        return url('api/v1/profile/avatar/' . basename($this->avatar));
     }
 
     public function role(): BelongsTo

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/config/theme.dart';
 import 'package:frontend/providers/auth_provider.dart';
@@ -9,6 +10,7 @@ import 'package:frontend/screens/member_dashboard_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('id_ID', null); // Wajib sebelum pakai DateFormat locale
   final authProvider = AuthProvider();
   await authProvider.init();
 

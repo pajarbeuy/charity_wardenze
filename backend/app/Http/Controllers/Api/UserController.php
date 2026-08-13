@@ -76,10 +76,11 @@ class UserController extends Controller
     public function update(Request $request, User $user): JsonResponse
     {
         $data = $request->validate([
-            'name' => 'sometimes|required|string|max:150',
-            'email' => ['sometimes', 'required', 'email', Rule::unique('users')->ignore($user->id)],
-            'phone' => 'nullable|string|max:30',
-            'role' => 'nullable|in:Admin,Member',
+            'name'     => 'sometimes|required|string|max:150',
+            'email'    => ['sometimes', 'required', 'email', Rule::unique('users')->ignore($user->id)],
+            'phone'    => 'nullable|string|max:30',
+            'role'     => 'nullable|in:Admin,Member',
+            'password' => 'nullable|string|min:8',
         ]);
 
         if (isset($data['role'])) {
@@ -88,9 +89,18 @@ class UserController extends Controller
             unset($data['role']);
         }
 
+        // Audit log terpisah jika password di-reset
+        $isPasswordReset = isset($data['password']) && $data['password'] !== null;
+
+        // Hapus password dari data jika null (tidak mau diubah)
+        if (array_key_exists('password', $data) && $data['password'] === null) {
+            unset($data['password']);
+        }
+
         $user->update($data);
 
-        $this->audit->log($request, 'USER_UPDATED', $user);
+        $action = $isPasswordReset ? 'PASSWORD_RESET' : 'USER_UPDATED';
+        $this->audit->log($request, $action, $user);
 
         return $this->success($user->fresh()->load('role'), 'User Updated');
     }

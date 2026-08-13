@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:frontend/config/theme.dart';
 import 'package:frontend/providers/cfms_provider.dart';
 import 'package:frontend/services/api_service.dart';
+import 'package:frontend/providers/auth_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -34,7 +35,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _save() async {
     setState(() => _isLoading = true);
     try {
-      await ApiService().put('/settings', {
+      final token=Provider.of<AuthProvider>(context, listen: false).token;
+      await ApiService(token:token).put('/settings', {
         'monthly_fee': double.parse(_monthlyFeeCtrl.text),
         'target_per_child': double.parse(_targetCtrl.text),
         'organization_name': _orgNameCtrl.text,

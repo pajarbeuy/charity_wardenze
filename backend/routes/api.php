@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Route;
 
 // ── Authentication (3 endpoints) ────────────────────────────────────────
 Route::post('/auth/login', [AuthController::class, 'login'])->name('login');
+Route::get('/profile/avatar/{filename}', [ProfileController::class, 'serveAvatar']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
@@ -47,6 +48,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::put('/profile', [ProfileController::class, 'update']);
     Route::patch('/profile/password', [ProfileController::class, 'changePassword']);
+    Route::post('/profile', [ProfileController::class, 'update']);
+    Route::delete('/profile/avatar', [ProfileController::class, 'deleteAvatar']);
 
     // ── Notifications (2 endpoints) ─────────────────────────────────────
     Route::get('/notifications', [NotificationController::class, 'index']);
@@ -80,6 +83,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/statistics/income', [StatisticsController::class, 'income']);
         Route::get('/statistics/expense', [StatisticsController::class, 'expense']);
         Route::get('/statistics/dashboard', [StatisticsController::class, 'dashboard']);
+        Route::get('/statistics/monthly-status', [StatisticsController::class, 'monthlyStatus']);
 
         // Charity Target Update (1 endpoint)
         Route::put('/charity-target', [CharityTargetController::class, 'update']);

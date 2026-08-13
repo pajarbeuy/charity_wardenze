@@ -4,6 +4,7 @@ class UserModel {
   final String email;
   final String? phone;
   final String? avatar;
+  final String? avatarUrl;
   final String roleName;
 
   UserModel({
@@ -12,6 +13,7 @@ class UserModel {
     required this.email,
     this.phone,
     this.avatar,
+    this.avatarUrl,
     required this.roleName,
   });
 
@@ -22,6 +24,7 @@ class UserModel {
       email: json['email'] ?? '',
       phone: json['phone'],
       avatar: json['avatar'],
+      avatarUrl: json['avatar_url'],
       roleName: json['role'] != null ? json['role']['name'] ?? 'Member' : 'Member',
     );
   }

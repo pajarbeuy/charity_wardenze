@@ -6,6 +6,8 @@ import 'package:frontend/providers/auth_provider.dart';
 import 'package:frontend/providers/cfms_provider.dart';
 import 'package:frontend/screens/audit_log_screen.dart';
 import 'package:frontend/screens/login_screen.dart';
+import 'package:frontend/screens/monthly_income_screen.dart';
+import 'package:frontend/screens/monthly_status_screen.dart';
 import 'package:frontend/screens/notifications_screen.dart';
 import 'package:frontend/screens/profile_screen.dart';
 import 'package:frontend/screens/reports_screen.dart';
@@ -159,6 +161,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   _menuItem(context, 'Verifikasi', Icons.fact_check, AppTheme.primary, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const VerificationScreen()))),
                   _menuItem(context, 'Pencairan', Icons.payments, AppTheme.danger, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WithdrawalScreen()))),
                   _menuItem(context, 'Anggota', Icons.people, AppTheme.secondary, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UserManagementScreen()))),
+                  _menuItem(context, 'Status Bulan', Icons.how_to_reg, const Color(0xFF0EA5E9), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MonthlyStatusScreen()))),
+                  _menuItem(context, 'Rekap Pendapatan', Icons.bar_chart, const Color(0xFF8B5CF6), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MonthlyIncomeScreen()))),
                   _menuItem(context, 'Laporan', Icons.picture_as_pdf, Colors.purple, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsScreen()))),
                   _menuItem(context, 'Pengaturan', Icons.settings, Colors.blueGrey, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()))),
                   _menuItem(context, 'Audit Log', Icons.security, Colors.brown, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AuditLogScreen()))),

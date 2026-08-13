@@ -13,6 +13,26 @@ class PaymentHistoryScreen extends StatefulWidget {
 
 class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
   final currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+  final _monthFormat = DateFormat('MMMM yyyy', 'id_ID');
+  final _dtFormat = DateFormat('d MMMM yyyy, HH:mm', 'id_ID');
+
+  String _formatMonth(String? raw) {
+    if (raw == null || raw.isEmpty) return '-';
+    try {
+      return _monthFormat.format(DateTime.parse(raw).toLocal());
+    } catch (_) {
+      return raw;
+    }
+  }
+
+  String _formatDateTime(String? raw) {
+    if (raw == null || raw.isEmpty) return '-';
+    try {
+      return _dtFormat.format(DateTime.parse(raw).toLocal());
+    } catch (_) {
+      return raw;
+    }
+  }
 
   @override
   void initState() {
@@ -62,7 +82,14 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const SizedBox(height: 4),
-                          Text('Bulan: ${p.paymentMonth} | Tipe: ${p.allocationType}'),
+                          Text(
+                            _formatDateTime(p.createdAt),
+                            style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                          ),
+                          Text(
+                            'Bulan: ${_formatMonth(p.paymentMonth)} | Tipe: ${p.allocationType}',
+                            style: const TextStyle(fontSize: 12),
+                          ),
                           if (p.rejectionReason != null)
                             Text('Alasan Tolak: ${p.rejectionReason}', style: const TextStyle(color: AppTheme.danger, fontSize: 12)),
                         ],

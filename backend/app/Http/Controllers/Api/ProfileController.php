@@ -76,4 +76,32 @@ class ProfileController extends Controller
 
         return $this->success(null, 'Password Changed');
     }
+    // delete profile/avatar
+    public function deleteAvatar(Request $request)
+    {
+        $user = $request->user();
+        if ($user->avatar && Storage::disk('public')->exists($user->avatar) ){
+            Storage::disk('public')->delete($user->avatar);
+        }
+        $user->update(['avatar' => null]);
+        $this->audit->log($request, 'DELETE_AVATAR', $user);
+
+        return $this->success($user->fresh()->load('role'), 'Avatar deleted');
+    }
+
+    /**
+     * GET /profile/avatar/{filename}
+     */
+    public function serveAvatar(string $filename)
+    {
+        $path = 'avatars/' . $filename;
+        if (! Storage::disk('public')->exists($path)) {
+            abort(404, 'Avatar not found');
+        }
+
+        return response()->file(Storage::disk('public')->path($path), [
+            'Access-Control-Allow-Origin' => '*',
+            'Access-Control-Allow-Methods' => 'GET, OPTIONS',
+        ]);
+    }
 }

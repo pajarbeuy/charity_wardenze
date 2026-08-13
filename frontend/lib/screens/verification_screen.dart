@@ -78,6 +78,20 @@ class VerificationScreen extends StatefulWidget {
 class _VerificationScreenState extends State<VerificationScreen> {
   final currencyFormat =
       NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+  final _monthFormat = DateFormat('MMMM yyyy', 'id_ID');
+  final _dtFormat    = DateFormat('d MMMM yyyy, HH:mm', 'id_ID');
+
+  String _formatMonth(String? raw) {
+    if (raw == null || raw.isEmpty) return '-';
+    try { return _monthFormat.format(DateTime.parse(raw).toLocal()); }
+    catch (_) { return raw; }
+  }
+
+  String _formatDateTime(String? raw) {
+    if (raw == null || raw.isEmpty) return '-';
+    try { return _dtFormat.format(DateTime.parse(raw).toLocal()); }
+    catch (_) { return raw; }
+  }
 
   @override
   void initState() {
@@ -161,9 +175,12 @@ class _VerificationScreenState extends State<VerificationScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Bulan: ${p.paymentMonth} | Tipe: ${p.allocationType}',
-                            style: const TextStyle(
-                                color: Color(0xFF475569), fontSize: 13),
+                            _formatDateTime(p.createdAt),
+                            style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
+                          ),
+                          Text(
+                            'Bulan: ${_formatMonth(p.paymentMonth)} | Tipe: ${p.allocationType}',
+                            style: const TextStyle(color: Color(0xFF475569), fontSize: 13),
                           ),
                           const SizedBox(height: 12),
 

@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend/models/user_model.dart';
@@ -55,6 +56,57 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       await logout();
+    }
+  }
+
+  Future<void> updateProfile({
+    required String name,
+    String? phone,
+    Uint8List? avatarBytes,
+    String? avatarPath,
+    String? filename,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      dynamic res;
+      if (avatarBytes != null || avatarPath != null) {
+        res = await ApiService(token: _token).updateProfileMultipart(
+          name: name,
+          phone: phone,
+          bytes: avatarBytes,
+          filePath: avatarPath,
+          filename: filename,
+        );
+      } else {
+        res = await ApiService(token: _token).put('/profile', {
+          'name': name,
+          'phone': phone,
+        });
+      }
+
+      _user = UserModel.fromJson(res['data']);
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _isLoading = false;
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  Future<void> deleteAvatar() async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final res = await ApiService(token: _token).delete('/profile/avatar');
+      _user = UserModel.fromJson(res['data']);
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _isLoading = false;
+      notifyListeners();
+      rethrow;
     }
   }
 

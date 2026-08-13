@@ -14,6 +14,8 @@ class CfmsProvider extends ChangeNotifier {
   Map<String, dynamic>? memberDashboard;
   Map<String, dynamic>? adminDashboard;
   Map<String, dynamic>? charityTarget;
+  Map<String, dynamic>? monthlyStatus;   // hasil /statistics/monthly-status
+  Map<int, double>? monthlyIncome;       // hasil /statistics/income {bulan: nominal}
   SettingModel? settings;
 
   List<PaymentModel> payments = [];
@@ -46,6 +48,26 @@ class CfmsProvider extends ChangeNotifier {
   Future<void> fetchCharityTarget() async {
     final res = await _api.get('/charity-target');
     charityTarget = res['data'];
+    notifyListeners();
+  }
+
+  /// Ambil status bayar semua member untuk [month] (format: "2026-08").
+  /// Default: bulan ini.
+  Future<void> fetchMonthlyStatus({String? month}) async {
+    final query = month != null ? '?month=$month' : '';
+    final res = await _api.get('/statistics/monthly-status$query');
+    monthlyStatus = res['data'];
+    notifyListeners();
+  }
+
+  /// Ambil pendapatan per bulan tahun ini dari /statistics/income.
+  Future<void> fetchMonthlyIncome() async {
+    final res = await _api.get('/statistics/income');
+    final raw = res['data'] as Map<String, dynamic>;
+    // key dari API berupa string angka bulan ("1" - "12")
+    monthlyIncome = raw.map(
+      (k, v) => MapEntry(int.parse(k), (v is String ? double.parse(v) : (v as num).toDouble())),
+    );
     notifyListeners();
   }
 
@@ -132,6 +154,12 @@ class CfmsProvider extends ChangeNotifier {
       'password': password,
       'role': role,
     });
+    await fetchUsers();
+  }
+
+  /// Reset password member oleh admin. [newPassword] harus minimal 8 karakter.
+  Future<void> resetUserPassword(int userId, String newPassword) async {
+    await _api.put('/users/$userId', {'password': newPassword});
     await fetchUsers();
   }
 

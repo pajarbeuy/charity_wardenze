@@ -172,13 +172,11 @@ class _DonationScreenState extends State<DonationScreen> {
                           border: Border.all(color: const Color(0xFFCBD5E1)),
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        child: const Column(
-                          children: [
-                            Icon(Icons.qr_code_2, size: 160, color: AppTheme.textPrimary),
-                            SizedBox(height: 8),
-                            Text('NPM: ID1029384756', style: TextStyle(fontWeight: FontWeight.bold)),
-                            Text('Komunitas Kas Donasi', style: TextStyle(color: Color(0xFF64748B), fontSize: 12)),
-                          ],
+                        child: Image.asset(
+                          'assets/qris.jpg',
+                          height: 250,
+                          width: 250,
+                          fit: BoxFit.contain,
                         ),
                       ),
                     ),

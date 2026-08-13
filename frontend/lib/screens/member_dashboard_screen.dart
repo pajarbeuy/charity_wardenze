@@ -19,6 +19,22 @@ class MemberDashboardScreen extends StatefulWidget {
 
 class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
   final currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+  final _monthFormat   = DateFormat('MMMM yyyy', 'id_ID');
+  final _dtFormat      = DateFormat('d MMMM yyyy, HH:mm', 'id_ID');
+
+  /// Format ISO date string → "Agustus 2026"
+  String _formatMonth(String? raw) {
+    if (raw == null || raw.isEmpty) return '-';
+    try { return _monthFormat.format(DateTime.parse(raw).toLocal()); }
+    catch (_) { return raw; }
+  }
+
+  /// Format ISO datetime string → "12 Agustus 2026, 19:31"
+  String _formatDateTime(String? raw) {
+    if (raw == null || raw.isEmpty) return '-';
+    try { return _dtFormat.format(DateTime.parse(raw).toLocal()); }
+    catch (_) { return raw; }
+  }
 
   @override
   void initState() {
@@ -224,7 +240,19 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                           currencyFormat.format(double.parse(item['amount'].toString())),
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        subtitle: Text('Bulan: ${item['payment_month']}'),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _formatDateTime(item['created_at']?.toString()),
+                              style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                            ),
+                            Text(
+                              'Bulan: ${_formatMonth(item['payment_month']?.toString())}',
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ],
+                        ),
                         trailing: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
