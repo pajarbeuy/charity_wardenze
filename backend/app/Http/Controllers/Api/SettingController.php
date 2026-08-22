@@ -29,30 +29,42 @@ class SettingController extends Controller
     /**
      * PUT /settings
      */
-    public function update(Request $request): JsonResponse
+    public function update(Request $request, \App\Services\ImageService $imageService): JsonResponse
     {
         $data = $request->validate([
             'monthly_fee' => 'sometimes|required|numeric|min:1000',
             'target_per_child' => 'sometimes|required|numeric|min:1000',
             'organization_name' => 'nullable|string|max:255',
-            'qris_image' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
-            'organization_logo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'qris_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'organization_logo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
         $setting = Setting::first();
 
         if ($request->hasFile('qris_image')) {
-            if ($setting->qris_image) {
+            if ($setting->qris_image && Storage::disk('public')->exists($setting->qris_image)) {
                 Storage::disk('public')->delete($setting->qris_image);
             }
-            $data['qris_image'] = $request->file('qris_image')->store('settings', 'public');
+            $data['qris_image'] = $imageService->storeAsWebp(
+                file: $request->file('qris_image'),
+                folder: 'settings',
+                disk: 'public',
+                maxWidth: 1200,
+                quality: 85
+            );
         }
 
         if ($request->hasFile('organization_logo')) {
-            if ($setting->organization_logo) {
+            if ($setting->organization_logo && Storage::disk('public')->exists($setting->organization_logo)) {
                 Storage::disk('public')->delete($setting->organization_logo);
             }
-            $data['organization_logo'] = $request->file('organization_logo')->store('settings', 'public');
+            $data['organization_logo'] = $imageService->storeAsWebp(
+                file: $request->file('organization_logo'),
+                folder: 'settings',
+                disk: 'public',
+                maxWidth: 500,
+                quality: 85
+            );
         }
 
         $setting->update($data);

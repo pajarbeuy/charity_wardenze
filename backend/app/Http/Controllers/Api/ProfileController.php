@@ -29,22 +29,28 @@ class ProfileController extends Controller
     /**
      * PUT /profile
      */
-    public function update(Request $request): JsonResponse
+    public function update(Request $request, \App\Services\ImageService $imageService): JsonResponse
     {
         $data = $request->validate([
             'name' => 'sometimes|required|string|max:150',
             'phone' => 'nullable|string|max:30',
-            'avatar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'avatar' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
         $user = $request->user();
 
         if ($request->hasFile('avatar')) {
             // Delete old avatar if exists
-            if ($user->avatar) {
+            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
                 Storage::disk('public')->delete($user->avatar);
             }
-            $data['avatar'] = $request->file('avatar')->store('avatars', 'public');
+            $data['avatar'] = $imageService->storeAsWebp(
+                file: $request->file('avatar'),
+                folder: 'avatars',
+                disk: 'public',
+                maxWidth: 500,
+                quality: 80
+            );
         }
 
         $user->update($data);

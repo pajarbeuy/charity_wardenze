@@ -2,18 +2,30 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend/models/user_model.dart';
-import 'package:frontend/services/api_service.dart';
+import 'package:frontend/repositories/auth_repository.dart';
 
 class AuthProvider extends ChangeNotifier {
+  final AuthRepository _authRepository;
+
   UserModel? _user;
   String? _token;
   bool _isLoading = false;
+
+  AuthProvider({AuthRepository? authRepository})
+      : _authRepository = authRepository ?? AuthRepository();
 
   UserModel? get user => _user;
   String? get token => _token;
   bool get isAuthenticated => _token != null;
   bool get isAdmin => _user?.isAdmin ?? false;
   bool get isLoading => _isLoading;
+
+  // Setter manual untuk kemudahan testing
+  void setUserAndToken(UserModel? user, String? token) {
+    _user = user;
+    _token = token;
+    notifyListeners();
+  }
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -27,10 +39,7 @@ class AuthProvider extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     try {
-      final res = await ApiService().post('/auth/login', {
-        'email': email,
-        'password': password,
-      });
+      final res = await _authRepository.login(email, password);
 
       _token = res['data']['token'];
       _user = UserModel.fromJson(res['data']['user']);
@@ -51,8 +60,7 @@ class AuthProvider extends ChangeNotifier {
   Future<void> fetchMe() async {
     if (_token == null) return;
     try {
-      final res = await ApiService(token: _token).get('/auth/me');
-      _user = UserModel.fromJson(res['data']);
+      _user = await _authRepository.fetchMe(_token!);
       notifyListeners();
     } catch (e) {
       await logout();
@@ -69,23 +77,14 @@ class AuthProvider extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     try {
-      dynamic res;
-      if (avatarBytes != null || avatarPath != null) {
-        res = await ApiService(token: _token).updateProfileMultipart(
-          name: name,
-          phone: phone,
-          bytes: avatarBytes,
-          filePath: avatarPath,
-          filename: filename,
-        );
-      } else {
-        res = await ApiService(token: _token).put('/profile', {
-          'name': name,
-          'phone': phone,
-        });
-      }
-
-      _user = UserModel.fromJson(res['data']);
+      _user = await _authRepository.updateProfile(
+        token: _token,
+        name: name,
+        phone: phone,
+        avatarBytes: avatarBytes,
+        avatarPath: avatarPath,
+        filename: filename,
+      );
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -99,8 +98,7 @@ class AuthProvider extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     try {
-      final res = await ApiService(token: _token).delete('/profile/avatar');
-      _user = UserModel.fromJson(res['data']);
+      _user = await _authRepository.deleteAvatar(_token);
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -112,9 +110,7 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> logout() async {
     if (_token != null) {
-      try {
-        await ApiService(token: _token).post('/auth/logout', {});
-      } catch (_) {}
+      await _authRepository.logout(_token);
     }
     _token = null;
     _user = null;

@@ -135,7 +135,7 @@ class PaymentController extends Controller
     /**
      * POST /payments/{payment}/proof
      */
-    public function uploadProof(Request $request, Payment $payment): JsonResponse
+    public function uploadProof(Request $request, Payment $payment, \App\Services\ImageService $imageService): JsonResponse
     {
         abort_unless(
             $payment->user_id === $request->user()->id && $payment->payment_status === 'PENDING',
@@ -143,11 +143,24 @@ class PaymentController extends Controller
         );
 
         $request->validate([
-            'proof' => 'required|image|mimes:jpg,jpeg,png|max:5120',
+            'proof' => 'required|image|mimes:jpg,jpeg,png,webp|max:10240',
         ]);
 
+        // Hapus file lama jika user mengunggah ulang bukti pembayaran
+        if ($payment->proof_image && Storage::disk('private')->exists($payment->proof_image)) {
+            Storage::disk('private')->delete($payment->proof_image);
+        }
+
+        $proofPath = $imageService->storeAsWebp(
+            file: $request->file('proof'),
+            folder: 'payment-proofs',
+            disk: 'private',
+            maxWidth: 1200,
+            quality: 80
+        );
+
         $payment->update([
-            'proof_image' => $request->file('proof')->store('payment-proofs', 'private'),
+            'proof_image' => $proofPath,
         ]);
 
         return $this->success($payment, 'Proof uploaded');
@@ -167,9 +180,9 @@ class PaymentController extends Controller
         abort_if($payment->proof_image === null, 404);
         abort_unless(Storage::disk('private')->exists($payment->proof_image), 404);
 
-        $mimeType = 'image/png'; // default safe fallback
+        $mimeType = 'image/webp'; // default safe fallback
         try {
-            $mimeType = Storage::disk('private')->mimeType($payment->proof_image) ?: 'image/png';
+            $mimeType = Storage::disk('private')->mimeType($payment->proof_image) ?: 'image/webp';
         } catch (\Exception) {}
 
         return response(
