@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb, Tar
 
 class ApiConfig {
   /// URL ngrok — ganti setiap kali tunnel baru dibuka
-  static const String _ngrokUrl  = 'https://crusher-vaguely-tyke.ngrok-free.dev/api/v1';
+  static const String _ngrokUrl  = 'https://arise-clean-cane.ngrok-free.dev/api/v1';
   static const String _localUrl  = 'http://127.0.0.1:8000/api/v1';
 
   /// Otomatis memilih base URL berdasarkan platform:
